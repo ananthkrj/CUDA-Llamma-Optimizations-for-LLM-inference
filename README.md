@@ -2,9 +2,11 @@
 high performance RMSNorm + KV Cache, and Flash attention Kernels for LLM interface
 
 High level value:
-RMS norm is a technique in which more kernels like flash attention are used to optimize llms
-RMS norm in a normalization technique used in transformers to stabilize training and improve performance, 
+- RMS norm in a normalization technique used in transformers to stabilize training and improve performance, 
 particlularly in llms such as llaMa (like this repo)
+
+- RMS norm is a technique in which more kernels built off 
+rms norm like flash attention are used to optimize llms
 
 Paper to read + go off:
 https://arxiv.org/pdf/1910.07467

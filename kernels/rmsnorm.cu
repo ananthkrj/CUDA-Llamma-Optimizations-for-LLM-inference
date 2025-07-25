@@ -70,6 +70,9 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
 // to use pytorch name in header, and if i need to connect to the
 // binding
 
+// cpp code in binding file will call the host side wrapper function
+// defined here
+
 // find out what the parameters of wrapper functions should be
 int main() {
 

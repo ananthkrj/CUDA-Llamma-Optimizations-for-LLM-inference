@@ -16,8 +16,8 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
     // addressingwhen it comes to implementing nmsnorm and 
     // other functions. Find out why on 25th
 
-    // Prioritizing sequential memory access, divergence through
-    // careful code design are ket to achieving effixient parallel
+    // Prioritize sequential memory access, divergence through
+    // careful code design are keu to achieving effixient parallel
     // reduction in rmsnorm
 
     // Sequential Addressing -> parallel reduction -> rmsnorm -> benchmarked in lit llamA
@@ -36,6 +36,8 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
 
     // implement reduction in shared memory
     // use reverse loop and thread ID- based indexing
+
+    for (int )
 
 
 

@@ -66,12 +66,27 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
 }
 
 
-// wrapper function that will allocate device memory, copy
-// from host to device, launch cuda kernel using gridDim and
-// blockDIm
-// copy results back to host from device, and free memory
-// host memory should be the parameters of the wrapper launcher
+// Goal: Find out what a wrapper function is, why I need it, if i need
+// to use pytorch name in header, and if i need to connect to the
+// binding
+
+// find out what the parameters of wrapper functions should be
 int main() {
+
+    // allocate input device memory
+
+
+    // allocate output device memory
+
+    // copy from host to device
+
+    // allocalate block and grid dimensions
+
+    // launch the kernel
+
+    // copy from device back to host
+
+    // free device memory
 
 }
 

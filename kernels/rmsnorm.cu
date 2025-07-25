@@ -37,12 +37,32 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
     // implement reduction in shared memory
     // use reverse loop and thread ID- based indexing
 
-    for (int )
+    // set integer s to be midpoint of number threads in
+    // x axis of a block
 
+    // go backwards until first thread in x axis is reached
+
+    for (int s = blockDim.x / 2; s >= 1) {
+        // populate shared thread id with summing 
+        // of s variable with thread id as long
+        // as the thread id is less than midpoint
+        // of mid of x axis of block
+        if (tid < s) {
+            sdata[tid] += sdata[tid + s];
+        }
+        // syncthreads to avoid race conditions (conflictions)
+        __syncthreads();
+    }
 
 
     // write result from shared mem back to global mem
-    // as long as individual thread == 0
+    // as long as individual thread id == 0
+
+    // should pass blockIdx.x to be populated
+    // into global mem output array
+    if (tid == 0) {
+        g_output[blockIdx.x] = sdata[0];
+    }
 }
 
 

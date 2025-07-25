@@ -6,9 +6,8 @@
 
 // Need to implement using parallel reduction + shared memory
 
-__global__ void NMSNorm(float* input, float* output) {
+__global__ void NMSNorm(float* g_input, float* g_output) {
 
-    // decl
     // parallel reduction implementation: for each array in the batch,
     // assign a thread block consisting of a fixed number of threads to compute 
     // the sum of elements in the array
@@ -22,6 +21,18 @@ __global__ void NMSNorm(float* input, float* output) {
     // reduction in rmsnorm
 
     // sequential memory -> divergence -> parallel reduction -> optimized rmsnorm
+
+    // declare shared memory array
+    extern __shared__ int = sdata[];
+
+    // declare individual thread id, will pass this into
+    // shared mem array
+    int tid = threadIdx.x;
+    // calculation for thread id
+    int i = blockIdx.x * blockDim.x + threadIdx.x
+    // transfer global memory to shared memory
+    sdata[tid] = g_input[i];
+    __syncthreads();
 }
 
 

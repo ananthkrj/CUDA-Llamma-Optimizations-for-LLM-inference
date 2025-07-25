@@ -20,7 +20,7 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
     // careful code design are ket to achieving effixient parallel
     // reduction in rmsnorm
 
-    // sequential memory -> divergence -> parallel reduction -> optimized rmsnorm
+    // Sequential Addressing -> parallel reduction -> rmsnorm -> benchmarked in lit llamA
 
     // declare shared memory array
     extern __shared__ int = sdata[];
@@ -33,6 +33,14 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
     // transfer global memory to shared memory
     sdata[tid] = g_input[i];
     __syncthreads();
+
+    // implement reduction in shared memory
+    // use reverse loop and thread ID- based indexing
+
+
+
+    // write result from shared mem back to global mem
+    // as long as individual thread == 0
 }
 
 

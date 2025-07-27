@@ -6,6 +6,8 @@
 
 // Need to implement using parallel reduction + shared memory
 
+// USe warp level reduction as well
+
 __global__ void NMSNorm(float* g_input, float* g_output) {
 
     // parallel reduction implementation: for each array in the batch,
@@ -66,30 +68,20 @@ __global__ void NMSNorm(float* g_input, float* g_output) {
 }
 
 
-// Goal: Find out what a wrapper function is, why I need it, if i need
-// to use pytorch name in header, and if i need to connect to the
-// binding
+// declare kernel launch as a forward function for pytorch integration (binding.cpp file later)
 
-// cpp code in binding file will call the host side wrapper function
-// defined here
-
-// find out what the parameters of wrapper functions should be
-int main() {
-
+void rmsnorm_forward_cuda(float *g_input, float *g_output, float* weight, int B, int D) {
     // allocate input device memory
 
-
-    // allocate output device memory
+    // allocat output device memory
 
     // copy from host to device
 
-    // allocalate block and grid dimensions
+    // allocate block and grix dimensions
 
-    // launch the kernel
+    // launch kernel using previous dimensions
 
     // copy from device back to host
 
     // free device memory
-
 }
-

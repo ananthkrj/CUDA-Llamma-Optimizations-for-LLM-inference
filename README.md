@@ -42,3 +42,5 @@ benchmarks: performance comparison vs baseline pytorch operations
 
 Key Concepts:
 - Wil use shared memory and fused bias + activation to optimize rmsNorm
+- Use Warp Level Reduction in addition to Sequential Addressing to fully optimize smaller 
+dimensions in transformer models

@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <cmath>
 #include <cuda_fp16.h>
+#define FULL_MASK 0xffffffff
 
 // Implement using rms calculartion + sequential addressing to store calc + 
 // kernel for large dimensions
@@ -107,8 +108,35 @@ float* __restrict__ output, int B, int D) {
     }
 
     // warp level reduction within each warp, utilize pragma unroll
+    // use pragma unroll to reduce branch divergence and maximize efficiency
+    // of gpu hardware by reducing loop overhead
+
+    // start offset, divide by 2, decrease until 0 reached
+
+    // perform tree reduction to compute sum of sum variable held
+    // by each thread in a warp
+
+    // understand warp architecture
+    #pragma unroll
+    for (int offset = 16; i > 0; offset /= 2) {
+        sum += __shfl_down_sync(FULL_MASK, sum, offset);
+    }
+
+    // __shfl_down_sync utilizes the warp memory as it will get the value
+    // of the sum variable from the thread at lane X + offset of the same 
+    // warp. This data exchange is performed between registers and more 
+    // efficient than shared memory.
 
     // store warp results in shared memory, up to 32 warps
+    // support up to 32 warps which is 1024 threads
+    __shared__ float wrap_sums[32];
+    // find out why the lane_id needs to be 0, in order to load sum
+    // into shared memory
+    if (lane_id == 0) {
+        warp_sums[wrap_id] = sum;
+    }
+
+    __syncthreads();
 
     // final reduction across warps, by using first warp
 

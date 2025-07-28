@@ -2,10 +2,6 @@
 #include <cmath>
 #include <cuda_fp16.h>
 
-
-// rms norm kernel, declare kernel, and then figure
-// out other functions needed
-
 // Need to implement using parallel reduction + shared memory
 
 // USe warp level reduction as well
@@ -44,15 +40,22 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
 
 
     // calculate offset for this batch
-    const float *input_ptr = blockIdx.x;
-    // calculation for thread id
-    int i = blockIdx.x * blockDim.x + threadIdx.x
+    const float* input_ptr = input + batch_index * D;
+    float* output_ptr = output + batch_index * D;
     
     // compute sum of squares using parallel reduction
+    float sum = 0.0f;
 
     // each thread processes multiple elements if D > block_size (dim)
+    // square of sums computation
+    for (int i = tid; i < D; i += block_size) {
+        float val = input_ptr[i];
+        sum += val * val;
+    }
 
     // store the partial sum in shared memory
+    sdata[tid] = sum;
+    __syncthreads();
 
     // implement parallel reducition using sequential addressing
 
@@ -65,25 +68,24 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
     }
 
 
-    // write result from shared mem back to global mem
-    // as long as individual thread id == 0
-
-    // should pass blockIdx.x to be populated
-    // into global mem output array
+    // broadcast final sum to all threads
+    // used to create rms_inv variable
     if (tid == 0) {
-        g_output[blockIdx.x] = sdata[0];
+        float mean_sq = sdata[0] / D; // mean of squares
+        rms_inv = rsqrt(mean_sq + eps); // 1/sqrt(mean_sq + eps)
     }
 
     // compute rms normalization and apply weight
     // understand this calculation:
     // output_ptr[i] = input_ptr[i] * rms_inv * weight[i];
     // and why i start at tidm go till D, and increment i with blocksize
+    for (int i = tid; i < D; i += block_size) {
+        output_ptr[i] = input_ptr[i] * rms_inv * weight[i];
+    }
+
 }
 
-// Warp reduction kernel, to optimize smaller dimensions
-// declare kernel launch as a forward function for pytorch integration (binding.cpp file later)
-
-// same parmeteters
+// Warp optimized kernel, to optimize smaller dimensions
 
 __global__ void Warp_RMSNorm(const float* __restrict__ input, const float* __restrict__ weight,
 float* __restrict__ output, int B, int D) {

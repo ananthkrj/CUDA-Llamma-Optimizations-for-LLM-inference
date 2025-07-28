@@ -29,18 +29,14 @@ Then write results of these threads to shared memory.
 which stems from:
 https://arxiv.org/pdf/1706.03762
 
-
-Steps after reading:
-- Start writing a CUDA RMSNorm for `float32`, then `half`.
-- Find out how to implement warp-wide reductions.
-- Only refer to shared memory optimization guides once basic kernel is working
-- Then implement shared memory
-
 kernels: Cuda files
 bindings: Pytorch extension wrappers
 benchmarks: performance comparison vs baseline pytorch operations
 
 Key Concepts:
-- Wil use shared memory and fused bias + activation to optimize rmsNorm
-- Use Warp Level Reduction in addition to Sequential Addressing to fully optimize smaller 
-dimensions in transformer models
+- Before both optimization techniques, need to compute square of sums
+value, then load this sum into the shared memory array
+- Use Sequential Addressing Parallele reduction to optimize dimensions
+that are greater than 4096. 
+- Use Warp Level Reduction in second kernel to optimize dimensions less
+than or equal to 4096

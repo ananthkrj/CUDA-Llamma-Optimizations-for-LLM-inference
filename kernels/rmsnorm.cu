@@ -2,14 +2,9 @@
 #include <cmath>
 #include <cuda_fp16.h>
 
-// Need to implement using parallel reduction + shared memory
-
-// USe warp level reduction as well
-
+// Implement using rms calculartion + sequential addressing to store calc + 
 // kernel for large dimensions
-// use of __restrict__ tells compiler that memory location of this pointer
-// wont be accessed by any others
-// aacoridng to formula:
+// accoriding to formula:
 // input = [B. D]
 // weight = [D]
 // output = [B, D]
@@ -24,8 +19,7 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
 
     // each block processes one seqeuence in batch
     // edge case, find out how this relates to rms formula
-    int batch_index = threadIdx.x;
-    if (batch_index > B) {
+    if (blockIdx.x >= B) {
         return;
     }
 
@@ -35,20 +29,17 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
     // declare individual thread id, will pass this into
     // shared mem array
     int tid = threadIdx.x;
-    // store blockDim.x in block size variable
-    int block_size = blockDim.x;
-
 
     // calculate offset for this batch
-    const float* input_ptr = input + batch_index * D;
-    float* output_ptr = output + batch_index * D;
+    const float* input_ptr = input + blockIdx.x * D;
+    float* output_ptr = output + blockIdx.x * D;
     
     // compute sum of squares using parallel reduction
     float sum = 0.0f;
 
     // each thread processes multiple elements if D > block_size (dim)
     // square of sums computation
-    for (int i = tid; i < D; i += block_size) {
+    for (int i = tid; i < D; i += blockDim.x) {
         float val = input_ptr[i];
         sum += val * val;
     }
@@ -90,12 +81,30 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
 __global__ void Warp_RMSNorm(const float* __restrict__ input, const float* __restrict__ weight,
 float* __restrict__ output, int B, int D) {
     // each block processes one seqeuence in batch
+    // refers to index of a block, as batch is a block
+    int batch_index = blockIdx.x;
+    if (batch_index >= B) {
+        return;
+    }
 
     // initialize tid, warp_id, lane_id using / and % 32 calculations, then num_Warps
+    int tid = threadIdx.x;
+    int warp_id = tid / 32;
+    int lane_id = tid % 32;
+    int num_warps = (blockDim.x + 31) / 32;
 
     // calculate input_ptr and output_ptr
+    const float* input_ptr = input + blockIdx.x * D;
+    float* output_ptr = output + blockIdx.x * D;
 
-    // compute sum of squares (refer to formula)
+    // compute sum of squares, same formula used for rms norm
+    float sum = 0.0f;
+    for (int i = tid; i < D; i += blockDim.x) {
+        // pass in this index, into input_ptr calculation, find out
+        // how that calculation relevant to here
+        float val = input_ptr[i];
+        sum += val * val;
+    }
 
     // warp level reduction within each warp, utilize pragma unroll
 
@@ -103,9 +112,9 @@ float* __restrict__ output, int B, int D) {
 
     // final reduction across warps, by using first warp
 
-    // broadcast result using rms calculation 
+    // broadcast result using mean_sq and rms_inv again
 
-    // apply normlaization and scaling
+    // apply normlaization and scaling, utilizing input pointer, rms_inv, and weight
 }
 
 void rmsnorm_forward_cuda(float *g_input, float *g_output, float* weight, int B, int D) {

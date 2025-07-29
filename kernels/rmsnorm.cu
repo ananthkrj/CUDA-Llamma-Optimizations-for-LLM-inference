@@ -9,7 +9,7 @@
 // input = [B. D]
 // weight = [D]
 // output = [B, D]
-__global__ void RMSNorm(const float* __restrict__ input, const float* __restrict__ weight,
+__global__ void Sequential_RMSNorm(const float* __restrict__ input, const float* __restrict__ weight,
 float* __restrict__ output, int B, int D, float eps = 1e-6f) {
 
     // parallel reduction implementation: for each array in the batch,
@@ -80,7 +80,7 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
 // Warp optimized kernel, to optimize smaller dimensions
 
 __global__ void Warp_RMSNorm(const float* __restrict__ input, const float* __restrict__ weight,
-float* __restrict__ output, int B, int D) {
+float* __restrict__ output, int B, int D, float eps = 1e-6f) {
     // each block processes one seqeuence in batch
     // refers to index of a block, as batch is a block
     int batch_index = blockIdx.x;
@@ -186,17 +186,45 @@ float* __restrict__ output, int B, int D) {
     // the entire block, move to next block or next thread in block hence blockDim.x (length of block)?
     for (int i = threadIdx.x; i < D; i += blockDim.x) {
         // all threads in block computed for 
-        output_ptr[i] = intput_ptr[i] * rms_inv * weight[i];
+        output_ptr[i] = intput_ptr[i] * rms_inv * weight;
     }
 
 }
 
-void rmsnorm_forward_cuda(float *g_input, float *g_output, float* weight, int B, int D) {
+void rmsnorm_forward_cuda(float *g_input, float *g_output, float* weight, 
+int B, int D, float eps = 1e-6f) {
     // optimize block size selection, <= 1024 vs not
+    // find out why 1024, these are small dimensions
+    int block_size;
+    if (D <= 1024) {
+        // for small dimesnions use block size close to D but rounded to 
+        // warp size (32), so round down
+        block_size = min(1024, ((D + 31) / 32) * 32);
+    } else {
+        // for a larger D use the full 1024 threads
+        block_size = 1024;
+    }
 
     // dim3 for grid and block
+    // find out the importance of this intialization:
+    // These are the dim3 intiliazations which actually
+    // enables the kernel laucnh
+    dim3 grid(B);
+    dim3 block(block_size);
 
     // if D <= 4096, use warp so call that kernel, else use sequential kernel
+    if (D <= 4096) {
+        // utilize warp reduction kernel
+        Warp_RMSNorm<<<grid, block>>>(input, weight, output, B, D, eps);
+    } else {
+        // use sequential addressing parallel reduction kernel 
+        // if dimensions are greater than 4096
+        // need shared mem block for some reason, find out why 
+        // i need shared_mem_size
+        size_t shared_mem_size = block_size * sizeof(float);
+        // call sequential kernel, also launch with shared_mem_size variable
+        Sequential_RMSNorm<<<grid, block, shared_mem_size>>>(input, weight, output, B, D, eps);
+    }
 
     // cuda error checking for launching kernels
 

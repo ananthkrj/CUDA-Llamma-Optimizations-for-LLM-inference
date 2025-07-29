@@ -88,7 +88,8 @@ float* __restrict__ output, int B, int D) {
         return;
     }
 
-    // initialize tid, warp_id, lane_id using / and % 32 calculations, then num_Warps
+    // initialize tid, warp_id, lane_id using / and % 32 calculations
+    // what is warp_id, lane_id, and num_warps?
     int tid = threadIdx.x;
     int warp_id = tid / 32;
     int lane_id = tid % 32;
@@ -132,17 +133,62 @@ float* __restrict__ output, int B, int D) {
     __shared__ float wrap_sums[32];
     // find out why the lane_id needs to be 0, in order to load sum
     // into shared memory
+    // find out what warp_sums is 
     if (lane_id == 0) {
         warp_sums[wrap_id] = sum;
     }
 
     __syncthreads();
 
-    // final reduction across warps, by using first warp
+    // final reduction across all warps
+    // load the warp sums into the first warp
+    if (lane_id < num_warps) {
+        sum = warp_sums[lane_id];
+    } else {
+        sum = 0.0f;
+
+        // reduce across warps using shuffle, diverge 
+        #pragma unroll
+        for (int offset = 16; offset > 0; offset /= 2) {
+            sum += __shfl_down_sync(FULL_MASK, sum, offset);
+        }
+    }
 
     // broadcast result using mean_sq and rms_inv again
 
+    // it mean for a tid to be 0: it means only first thread
+    // in block executes this
+    // what does rms_inv is the inverse of rms norm formula
+    // and makes it easy to calculate the final value
+    __shared__ float rms_inv;
+    if (tid == 0) {
+        // squared mean is the squared sum over dimensions
+        float mean_sq = sum / D;
+        // inverse of rmsnorm is the squared mean + eps scaling values
+        // using rsqrtf and inverse of rmsnorm is much faster than
+        // regular calculation
+
+        // Calculates 1 / sqrt(mean_sq + eps) using the fast intrinsic (inverse)
+        rms_inv = rsqrtf(mean_sq + eps);
+    }
+
+    __syncthreads();
+
     // apply normlaization and scaling, utilizing input pointer, rms_inv, and weight
+
+
+    // with rms_inv all threads in the block can use rms_inv for final output
+    // calculation
+
+    // iterate through hidden dimensions
+    // find out why i += blockDim.x, adding length of block every iteration
+    // thought to check: start from first thread of a block, iteration through
+    // the entire block, move to next block or next thread in block hence blockDim.x (length of block)?
+    for (int i = threadIdx.x; i < D; i += blockDim.x) {
+        // all threads in block computed for 
+        output_ptr[i] = intput_ptr[i] * rms_inv * weight[i];
+    }
+
 }
 
 void rmsnorm_forward_cuda(float *g_input, float *g_output, float* weight, int B, int D) {

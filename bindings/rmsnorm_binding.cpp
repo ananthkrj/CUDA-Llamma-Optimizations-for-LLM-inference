@@ -18,6 +18,28 @@ float* output, int B, int D, float eps);
 // rmsnorm_forward or rmsnorm_forward_cuda
 torch::Tensor rmsnorm_forward_cuda(torch::Tensor input, torch::Tensor weight, float eps = 1e-6f);
 
+    // input validation
+    // input and weight are the tensor inputs
+    // so need to validate that they are tensors, contigous, and float32
+    TORCH_CHECK(input.is_cuda(), "Input should be a tensor");
+    TORCH_CHECK(weight.is_cuda(), "Weight should be a tensor");
+    TORCH_CHECK();
+    TORCH_CHECK();
+    TORCH_CHECK();
+    TORCH_CHECK();
+
+
+    // shape validation
+    // [B, D] == [B] so input(1) should be weight(0)
+    // and size of input must be equal to size of weight 
+
+    // create output tensor
+
+    // launch cuda kernel
+
+    // check for launch errors
+
+    // return output
 // backward pass implementation
 // find out difference between the two implementations, why i need backward and forward
 std::vector<torch::Tensor> rmsnorm_backward() {
@@ -29,7 +51,7 @@ std::vector<torch::Tensor> rmsnorm_backward() {
 
     // backward pass
 
-    // handle case where gradients miught be done
+    // handle case where gradients miught be None
 
     // return gradient input and weight
 

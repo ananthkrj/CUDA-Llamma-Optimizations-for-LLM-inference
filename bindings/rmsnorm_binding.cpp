@@ -8,35 +8,18 @@
 
 
 // wrapper that launches cuda kernel from .cu file.
+// find out why exactly i need to restate launch function here
+void rmsnorm_forward_cuda(const float* input, const float* weight,
+float* output, int B, int D, float eps);
 
 // Use pytorch's c++ APi (ATenm torch::Tensor) to handle tensors
-
-// export function to pyrthon using PYBIND11 module or torch library
-
-// Connext this binding to python using setup.py with
-// torch.utils.cpp_extension
-
-// declare kuda kernel
-
-void rmsnorm_forward_cuda() {
-
-}
-
-// C++ wrapper function
-torch::Tensor rmsnorm_forward() {
-    // input validation
-
-    // shape validation
-
-    // create output tensor
-
-    // launch cuda kernel (end function from last file)
-
-    // check for cuda errors
-}
+// C++ wrapper function for function that launches kernel
+// forward pass, input parametersneeds to be tensors
+// rmsnorm_forward or rmsnorm_forward_cuda
+torch::Tensor rmsnorm_forward_cuda(torch::Tensor input, torch::Tensor weight, float eps = 1e-6f);
 
 // backward pass implementation
-// find out difference between the two implementations
+// find out difference between the two implementations, why i need backward and forward
 std::vector<torch::Tensor> rmsnorm_backward() {
     // input valdiation
 

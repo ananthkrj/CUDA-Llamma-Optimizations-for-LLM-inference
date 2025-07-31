@@ -227,6 +227,7 @@ int B, int D, float eps = 1e-6f) {
     }
 
     // cuda error checking for launching kernels
+    // find out if i need this, if kernel is getting launched in binding file
 
     // benchmarking check
 }

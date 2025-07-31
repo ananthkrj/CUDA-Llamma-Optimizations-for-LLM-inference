@@ -71,14 +71,34 @@ torch::Tensor rmsnorm_forward_cuda(torch::Tensor input, torch::Tensor weight, fl
 // backward pass implementation
 // find out difference between the two implementations, why i need backward and forward
 // what goes into backward
-std::vector<torch::Tensor> rmsnorm_backward() {
-    // input valdiation
+// need to enable automatic differentiation (autograd)
+// backward pass implements the process of backpropagation
+// takes gradient of the loss with respect to the output (grad_output)
+std::vector<torch::Tensor> rmsnorm_backward(torch::Tensor grad_output, torch::Tensor input,
+torch::Tensor weight, float eps = 1e-6f) {
 
-    // enable gradients for input and weight
+    // validate grad output, input and weight tensors first
+    TORCH_CHECK(grad_output.is_cuda(), "Grad output is a tensor");
+    TORCH_CHECK(input.is_cuda(), "input is a tensor");
+    TORCH_CHECK(weight.is_cuda(), "weight is a tensor");
 
-    // forward pass to get gradients
+    // enable gradient variables for input and weight by cloning and detaching input + weight
+    // find out what detatch().requires_grad_(true) does
+    auto input_copy = input.copy().detatch().requires_grad(true);
+    auto weight_copy = weight.copy().detatch().requires_grad(true);
 
-    // backward pass
+    // forward pass to get gradients, create output variable
+    auto output = rms_forward_cuda(input_copy, weight_copy, eps);
+
+    // backward pass using output variable and passing in grad_output
+    // find out why its backward and not rmsnorm_backward
+    output.backward(grad_output);
+
+    // initalize grad_input and grad_output variables using gradient variables
+    // find out why performing grad on the copied input and weight variables
+    // allows for creation of grad_input and grad_weight
+    auto grad_input = input_copy.grad();
+    auto grad_weight = weight_copy.grad();
 
     // handle case where gradients miught be None
 

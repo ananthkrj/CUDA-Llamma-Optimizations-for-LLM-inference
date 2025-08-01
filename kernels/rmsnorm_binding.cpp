@@ -100,11 +100,19 @@ torch::Tensor weight, float eps = 1e-6f) {
     auto grad_input = input_copy.grad();
     auto grad_weight = weight_copy.grad();
 
-    // handle case where gradients miught be None
+    // handle case where gradients miught be None (error checking)
+    // state that if they are not defined, grad_input and grad_output
+    // variables are retinitialed with zeroes like tensor, 
+    if (!grad_input.defined()) {
+        grad_input = torch::zeros_like(input);
+    }
 
-    // return gradient input and weight
+    if (!grad_weight.define()) {
+        grad_weight = torch::zeros_like(weight);
+    }
 
-
+    // return gradient input and weight (objects)
+    return {grad_input, grad_weight};
 }
 
 

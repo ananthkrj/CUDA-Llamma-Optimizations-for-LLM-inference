@@ -9,14 +9,14 @@
 
 // wrapper that launches cuda kernel from .cu file.
 // find out why exactly i need to restate launch function here
-void rmsnorm_forward_cuda(const float* input, const float* weight,
+void rmsnorm_forward(const float* input, const float* weight,
 float* output, int B, int D, float eps);
 
 // Use pytorch's c++ APi (ATenm torch::Tensor) to handle tensors
 // C++ wrapper function for function that launches kernel
 // forward pass, input parametersneeds to be tensors
 // rmsnorm_forward or rmsnorm_forward_cuda
-torch::Tensor rmsnorm_forward_cuda(torch::Tensor input, torch::Tensor weight, float eps = 1e-6f);
+torch::Tensor rmsnorm_forward(torch::Tensor input, torch::Tensor weight, float eps = 1e-6f);
 
     // input validation
     // input and weight are the tensor inputs
@@ -116,7 +116,15 @@ torch::Tensor weight, float eps = 1e-6f) {
 }
 
 
-// Register functions with pytorch
-PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+// Register functions with pytorch, need pybind module in
+// order to expose my cuda + c++ code to python, as it needs
+// to be registered as the rmsnorm python functions in lit llama
 
+// pass in the arguments of extension function to be parsed as python args
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    m.def("forward", &rmsnorm_forward, "RMS Norm forward pass in CUDA",
+    py::arg("input"), py::arg("weight"), py::arg("eps") =  1e-6f);
+
+    m.def("backward", &rmsnorm_backward, "RMS Norm backward pass in CUDA",
+    py::arg("grad_output"), py::arg("input"), py::arg("weight"), py::arg("eps") = 1e-6f)
 }

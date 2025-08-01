@@ -191,7 +191,7 @@ float* __restrict__ output, int B, int D, float eps = 1e-6f) {
 
 }
 
-void rmsnorm_forward_cuda(const float* input, const float* weight, float* output, 
+void rmsnorm_forward(const float* input, const float* weight, float* output, 
 int B, int D, float eps = 1e-6f) {
     // optimize block size selection, <= 1024 vs not
     // find out why 1024, these are small dimensions

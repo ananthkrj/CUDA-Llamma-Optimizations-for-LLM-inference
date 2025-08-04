@@ -2,7 +2,7 @@
 # python pytorch function
 import torch
 import torch.nn as nn
-import torch.utils.cpp_extension import load
+from torch.utils.cpp_extension import load
 import os
 
 # fully understand each component of this file, as it relates

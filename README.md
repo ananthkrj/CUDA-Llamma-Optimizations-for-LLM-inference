@@ -40,3 +40,16 @@ value, then load this sum into the shared memory array
 that are greater than 4096. 
 - Use Warp Level Reduction in second kernel to optimize dimensions less
 than or equal to 4096
+
+# Workflow
+**Always define planned workflow in beginning**
+RMSnorm Implementation
+1. rmsnorm.cu, rmsnorm_binding.cpp, rmsnorm_layer.py
+2. test_rmsnorm.py
+3. benchmark_standalone.py
+
+KVcache Implementation
+1. kvcache.cu, kvcache_binding.cpp, kvcache_layer.py
+2. test_rmsnorm.py
+
+

@@ -1,6 +1,6 @@
 # unit test to verify output correctness
 
-# this will be a script to run
+# this will be the script to run
 import torch
 import sys
 import os

@@ -1,9 +1,6 @@
 #include <cuda_runtime.h>
 
 /*
-source: 
-https://arxiv.org/pdf/2104.09864
-
 Workflow:
 1. simple kernel
 2. test simple
@@ -20,7 +17,7 @@ Workflow:
 // by model, or the total elements
 
 __global__ void rope_kernel(const float* input, float* input,
-const float* cos_cached, const float* sin_caches, int B, int H, int S, int D) {
+const float* cos_cached, const float* sin_cached, int B, int H, int S, int D) {
     // existing logic, elementwise processing
     // this is good for small sequences, debugging, and validatation
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -52,7 +49,7 @@ const float* cos_cached, const float* sin_caches, int B, int H, int S, int D) {
 }
 
 __global__ void rope_optimized_kernel(const float* input, float* output,
-const float* cos_cache, sin_cache, int B, int H, int S, int D) {
+const float* cos_cached, sin_cached, int B, int H, int S, int D) {
     // better for production use cases, utilizes memory coalescing
     // each thread processes complete pairs
     

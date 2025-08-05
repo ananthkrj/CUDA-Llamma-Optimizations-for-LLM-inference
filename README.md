@@ -1,17 +1,21 @@
 # CUDA-Llamma-Optimizations-for-LLM-inference
-high performance RMSNorm + KV Cache, and Flash attention Kernels for LLM interface
+
+**High performance RMSNorm + Rotary Position Embdeddings (ROPE) for LLM inference**
 
 High level value:
 - RMS norm in a normalization technique used in transformers to stabilize training and improve performance, 
-particlularly in llms such as llaMa (like this repo)
+- Use Rotary Position Embeddings (ROPE) as they are used in almost every layer of LLaMA. 
+- ROPE rotates coordinate pairs based on position, this will result in a large speedup for positional encoding and better cache utilozation
 
-- RMS norm is a technique in which more kernels built off 
-rms norm like flash attention are used to optimize llms
 
-Paper to read + go off:
+**Paper to read + go off:**
+RMSNorm paper:
 https://arxiv.org/pdf/1910.07467
 
-Notes:
+ROPE paper:
+https://arxiv.org/pdf/2104.09864
+
+**RMSNorm Notes:**
 RMS normalization - Root mean square normalization
 - Rmn
 - figure out cuda concepts needed to implement RMSsnorm
@@ -25,14 +29,6 @@ the RMS value across a large input vector in parallel
 memory. Threads within a block sum up partial squared of the input.
 Then write results of these threads to shared memory.
 - syncthreads 
-
-which stems from:
-https://arxiv.org/pdf/1706.03762
-
-kernels: Cuda files
-bindings: Pytorch extension wrappers
-benchmarks: performance comparison vs baseline pytorch operations
-
 Key Concepts:
 - Before both optimization techniques, need to compute square of sums
 value, then load this sum into the shared memory array
@@ -41,15 +37,9 @@ that are greater than 4096.
 - Use Warp Level Reduction in second kernel to optimize dimensions less
 than or equal to 4096
 
-# Workflow
-**Always define planned workflow in beginning**
-RMSnorm Implementation
-1. rmsnorm.cu, rmsnorm_binding.cpp, rmsnorm_layer.py
-2. test_rmsnorm.py
-3. benchmark_standalone.py
-
-KVcache Implementation
-1. kvcache.cu, kvcache_binding.cpp, kvcache_layer.py
-2. test_rmsnorm.py
+ROPE Notes:
+- What does Rope do:
+- How to apply Rope to optimize the llm layers:
+- What performance optimizations will this result in:
 
 

@@ -1,1 +1,4 @@
 # Requirements to run programs, how to integrate all the directories and files in them
+cuda
+torch
+c++17

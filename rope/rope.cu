@@ -1,6 +1,13 @@
 #include <cuda_runtime.h>
 
-
+/*
+Workflow:
+1. simple kernel
+2. test simple
+3. optimized kernel
+4. test
+5. finalize forward launch function
+*/
 
 // First kernel for simple rope implementation
 // general use c

@@ -56,12 +56,24 @@ const float* cos_cached, const float* sin_cached, int B, int H, int S, int D) {
     int cos_val = cos_cached[s * (D / 2) + pair_index];
     int sin_val = sin_cached[s * (D / 2) + pair_index];
 
+    // key is to understand D / 2
     // first value, so do cos - sin calculation based on rope formula:
     if (is_first_in_pair) {
-
+        // do x*cos - y*sin calc, need to make variable for y (partner idx)
+        // partner idx should be after D / 2
+        int partner_index = idx + D/2;
+        int x = input[idx];
+        int y = input[partner_index];
+        // find out why i am passing idx into output here
+        output[idx] = x * cos_val - y * sin_val;
+    // second value in formula sin + cos
+    } else {
+        // partner idx here, should be the one before D/2
+        int partner_index = idx - D/2;
+        int x = input[partner_index];
+        int y = input[idx];
+        output[idx] = x * sin_val + y * cos_val;
     }
-
-
 }
 
 __global__ void rope_optimized_kernel(const float* input, float* output,

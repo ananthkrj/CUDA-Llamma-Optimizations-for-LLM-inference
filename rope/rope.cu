@@ -29,11 +29,7 @@ const float* cos_cached, const float* sin_cached, int B, int H, int S, int D) {
     }
 
     // decode indices, so calculate using idx
-    // always modulate each variable by themelves
-    // need to convert the index thread into meaningful
-    // multidimensional coordinates as that is the form of the params
-    // thread processes specific tensor with four dimensions
-
+    // Converts a flat thread into 4d thread coordinates
     // writeout examplle
 
     // which dimension within head_dim
@@ -45,7 +41,27 @@ const float* cos_cached, const float* sin_cached, int B, int H, int S, int D) {
     // which batch
     int b = idx / (D * S * H);
 
-    // rope implemented using elementwise processing
+    // rope implemented using elementwise processing and in pairs (x_i, x_i{i + D/2})
+    // each thread handles one output (inefficient, but implement anyways)
+    // pair index calculations: rope doesnt rotate individual elements,
+    // it rotates pairs of elements
+
+    // which pair this element belongs do
+    int pair_index = d % (D / 2);
+    // first value in pair
+    bool is_first_in_pair = d < D  / 2;
+
+    // get rotational angle for a specific pair at sequence position
+    // s * (D/2) results in sequence position
+    int cos_val = cos_cached[s * (D / 2) + pair_index];
+    int sin_val = sin_cached[s * (D / 2) + pair_index];
+
+    // first value, so do cos - sin calculation based on rope formula:
+    if (is_first_in_pair) {
+
+    }
+
+
 }
 
 __global__ void rope_optimized_kernel(const float* input, float* output,
@@ -53,23 +69,6 @@ const float* cos_cached, sin_cached, int B, int H, int S, int D) {
     // better for production use cases, utilizes memory coalescing
     // each thread processes complete pairs
     
-    // compute index thread and num of elements
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int num_elements = B * S * H * D;
-
-    // edge cadse, index thread needs to be less than element nums
-    if (idx >= num_elements) {
-        return;
-    }
-
-    // concert individual index thread into multi dimensional array
-    // for proper tensor acces
-    int d = idx % D;
-    int s = (idx / d) % S;
-    int h = (idx / (S * D)) % H;
-    int b = idx / (S * D * H);
-
-    // rope implemented through pairs (x_i, x_i{i + D/2})
 }
 
 void rope_forward() {

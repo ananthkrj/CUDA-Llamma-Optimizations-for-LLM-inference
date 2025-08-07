@@ -80,6 +80,37 @@ __global__ void rope_optimized_kernel(const float* input, float* output,
 const float* cos_cached, sin_cached, int B, int H, int S, int D) {
     // better for production use cases, utilizes memory coalescing
     // each thread processes complete pairs
+
+    // changes to make towards optimized kernel
+
+    // pain points:
+    // 1. pair based thread mapping instad of individual 1 thread, map 
+    // 1 thread to a pair of elements, so it is pair_index thread
+    int pair_index = blockIdx.x * blockDim.x + threadIdx.x;
+    int total pairs = B * H * S * (D / 2);
+
+    // boundary case
+    if (pair_index >= total_elements) {
+        return;
+    }
+
+    // decode pair index to 4d coordinates
+    // difference is, is that D is split into D / 2
+    int pair_in_head = pair_index % (D / 2);
+    int s = (pair_index / (D / 2)) % S;
+    int h = (pair_index / ((D / 2) * S)) % H;
+    int b = pair_index / ((D / 2) * S * H);
+
+    // calculate memory indices for both elements
+
+    
+    // load cos/sin values (one lookup per pair instead of two)
+
+    // load both elements of the pair
+
+    // aaply 2D rotation matrix to the pair
+
+
     
 }
 

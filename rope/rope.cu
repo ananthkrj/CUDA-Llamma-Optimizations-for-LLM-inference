@@ -101,16 +101,32 @@ const float* cos_cached, sin_cached, int B, int H, int S, int D) {
     int h = (pair_index / ((D / 2) * S)) % H;
     int b = pair_index / ((D / 2) * S * H);
 
-    // calculate memory indices for both elements
-
+    // calculate memory indices for both individual
+    // elements that make up the pair
+    int base_idx = b * (H * S * D) + h * (S * D) + s * D;
+    // the first and second element
+    int x_idx = base_idx + pair_in_head; // value: x in pair
+    int y_idx = base_idx + pair_in_head + (D/2) // x_{i+D/2}
     
     // load cos/sin values (one lookup per pair instead of two)
+    // which is s * half (D/2) and + the pair_in_head
+    float cos_val = cos_cached[s * (D/2) + pair_in_head];
+    float sin_val = sin_cached[s * (D/2) + pair_in_head];
 
-    // load both elements of the pair
+    // load both element indices into x and y, which will
+    // be used in output calc
+    float x = input[x_idx];
+    float y = input[y_idx];
 
-    // aaply 2D rotation matrix to the pair
+    // aaply 2D rotation matrix to the pair, the actual
+    // rope calcuilation
+    output[x_idx] = x * cos_val - y * sin_val;
+    output[y_idx] = x * sin_val + y * cos_val;
+}
 
-
+// shared mem implementation
+__global__ shared_rope(const float* input, float* output,
+const float* cos_cached, const float* sin_cached, int B, int S, int D, int H) {
     
 }
 

@@ -128,6 +128,24 @@ const float* cos_cached, sin_cached, int B, int H, int S, int D) {
 __global__ shared_rope(const float* input, float* output,
 const float* cos_cached, const float* sin_cached, int B, int S, int D, int H) {
     
+    // shared memory intialization for cos/sin caching
+
+    // initilaize pair index, total pairs, and threadidx
+
+    // cooperative loading of cos/sin values into shared
+    // memory
+
+    // sync threads
+
+    // edge case if pair index if greater/= to total pairs
+
+    // decode coordinates (same)
+
+    // calculate memory indices
+
+    // use cached values from shared memory
+
+    // load and rotate pair
 }
 
 void rope_forward() {

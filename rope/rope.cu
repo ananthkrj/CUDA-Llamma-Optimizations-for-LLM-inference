@@ -129,23 +129,60 @@ __global__ shared_rope(const float* input, float* output,
 const float* cos_cached, const float* sin_cached, int B, int S, int D, int H) {
     
     // shared memory intialization for cos/sin caching
+    // initialize shared memory array
+    extern __shared__ float shared_mem[];
+    // find out different in shared mem for sin/cos caching
+    float* shared_cos = shared_mem;
+    float* shared_sin = &shared_mem[blockDim.x];
 
-    // initilaize pair index, total pairs, and threadidx
+    // initilaize pair index, total pairs, and thread idx
+    int pair_index = blockIdx.x * blockDim.x + threadIdx.x;
+    int total_pairs = B * H * S * (D / 2);
+    int tid = threadIdx.x;
 
     // cooperative loading of cos/sin values into shared
     // memory
+    if (pair_index < total_pairs) {
+        // fully understand pair_in_head calcultion
+        int pair_in_head = pair_index % (D / 2);
+        int s = (pair_index / (D / 2)) % 2;
+
+        shared_cos[tid] = cos_cached(s * (D/2) + pair_in_head);
+        shared_sin[tid] = sin_cached(s * (D/2) + pair_in_head);
+    }
 
     // sync threads
+    __syncthreads();
 
     // edge case if pair index if greater/= to total pairs
+    if (pair_index >= total_pairs) {
+        return;
+    }
 
     // decode coordinates (same)
+    int pair_in_head
+    int s
+    int h
+    int b
 
     // calculate memory indices
+    int base_index
+    int x_idx
+    int y _idx
+
 
     // use cached values from shared memory
+    float cos_val
+    float sin_val
 
     // load and rotate pair
+    float x
+    float y
+
+    output[x_idx]
+    output[y_idx]
+
+
 }
 
 void rope_forward() {

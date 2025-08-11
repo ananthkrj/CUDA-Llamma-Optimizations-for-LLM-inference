@@ -145,7 +145,7 @@ const float* cos_cached, const float* sin_cached, int B, int S, int D, int H) {
     if (pair_index < total_pairs) {
         // fully understand pair_in_head calcultion
         int pair_in_head = pair_index % (D / 2);
-        int s = (pair_index / (D / 2)) % 2;
+        int s = (pair_index / (D / 2)) % S;
 
         shared_cos[tid] = cos_cached(s * (D/2) + pair_in_head);
         shared_sin[tid] = sin_cached(s * (D/2) + pair_in_head);
@@ -160,29 +160,29 @@ const float* cos_cached, const float* sin_cached, int B, int S, int D, int H) {
     }
 
     // decode coordinates (same)
-    int pair_in_head
-    int s
-    int h
-    int b
+    int pair_in_head = pair_index % (D / 2);
+    int s = (pair_index / (D / 2)) % S;
+    int h = (pair_index / ((D / 2) * S)) % H;
+    int b = pair_index / ((D / 2) * S * H);
 
     // calculate memory indices
-    int base_index
-    int x_idx
-    int y _idx
+    int base_index = b * (H * S * D) + h * (S * D) + s * D; // somehow similar to coordinates indives
+    int x_idx = base_index + pair_in_head;
+    int y_idx = base_index + pair_in_head + (D / 2);
 
 
-    // use cached values from shared memory
-    float cos_val
-    float sin_val
+    // use cached values from shared memory, and load them
+    // into these float values with passing in tid
+    float cos_val = shared_cos[tid];
+    float sin_val = shared_sin[tid];
 
-    // load and rotate pair
-    float x
-    float y
+    // load and rotate pair, x_idx and y_idx allows to reotate input pair
+    float x = input[x_idx];
+    float y = input[y_idx];
 
-    output[x_idx]
-    output[y_idx]
-
-
+    // calculation to actually roate pair
+    output[x_idx] = x * cos_val - y * sin_val;
+    output[y_idx] = x * sin_val + y * cos_val;
 }
 
 void rope_forward() {

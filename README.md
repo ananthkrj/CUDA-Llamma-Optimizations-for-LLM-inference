@@ -41,5 +41,7 @@ ROPE Notes:
 - What does Rope do:
 - How to apply Rope to optimize the llm layers:
 - What performance optimizations will this result in:
+- Understand the calculations that goes into calculations for pair_index,
+total pairs, and decoding coordinates, base_index
 
 

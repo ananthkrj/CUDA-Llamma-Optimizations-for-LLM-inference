@@ -40,8 +40,20 @@ than or equal to 4096
 ROPE Notes:
 - What does Rope do:
 - How to apply Rope to optimize the llm layers:
+- Role of cos and sin
 - What performance optimizations will this result in:
 - Understand the calculations that goes into calculations for pair_index,
 total pairs, and decoding coordinates, base_index
+- proper parameters to validate in cpp binding (cos cached and sin cached)
+
+# Workflow process
+- Write failing test
+- Write code to make test pass
+- Refactor code and/or test
+- Commit
+- Repeat
+
+**Goal for both rmsnorm and rope**
+cuda -> binding -> layer -> test (continously) -> integration (benchmark)
 
 

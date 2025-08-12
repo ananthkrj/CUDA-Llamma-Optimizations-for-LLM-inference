@@ -16,7 +16,7 @@ float* output, int B, int D, float eps);
 // C++ wrapper function for function that launches kernel
 // forward pass, input parametersneeds to be tensors
 // rmsnorm_forward or rmsnorm_forward_cuda
-torch::Tensor rmsnorm_forward(torch::Tensor input, torch::Tensor weight, float eps = 1e-6f);
+torch::Tensor rmsnorm_forward(torch::Tensor input, torch::Tensor weight, float eps = 1e-6f) {
 
     // input validation
     // input and weight are the tensor inputs
@@ -67,6 +67,7 @@ torch::Tensor rmsnorm_forward(torch::Tensor input, torch::Tensor weight, float e
 
     // return output
     return output;
+}
 
 // backward pass implementation
 // find out difference between the two implementations, why i need backward and forward

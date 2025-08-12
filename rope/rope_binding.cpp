@@ -8,8 +8,20 @@ void rope_forward(const float* input, float* output, const float* cos_cached,
 const float* sin_cached, int B, int H, int S, int D);
 
 // wrap using torch
-torch::rope_forward() {
+// all inputs should be tensors
+torch::rope_forward(torch::Tensor input, torch::Tensor cos_cached,
+torch::Tensor sin_cached) {
+    // input validation
 
+    // shape validation
+
+    // validate integers
+
+    // crete outpute tensor to launch kernel
+
+    // launch kernel
+
+    // check for kernel launch errors
 }
 
 

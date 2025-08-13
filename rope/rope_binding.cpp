@@ -24,9 +24,27 @@ torch::Tensor sin_cached) {
     TORCH_CHECK(cos_cached.dtype() == torch::kFloat32, "cos cached should be a float");
     TORCH_CHECK(sin_cached.dtype() == torch::kFloat32, "sin cached should be a float");
 
-    // shape validation
+    // extract dimensions, needed for validation 
+    // input ia 4d tensor, made up of B, H, S, D
+    auto sizes = input.sizes();
+    TORCH_CHECK(input.dim() == 4, "input is a 4d tensor, made up of [B, H, S, D]");
+    int B = sizes[0];
+    int H = sizes[1];
+    int S = sizes[2];
+    int D = sizes[3];
 
-    // validate integers
+    // shape validation for the individual dimensions 
+    // of cos_cached and sin_cached
+    // dim dim size size size size
+    // both variables should be 2d tensors
+    // first dimension of both variables should match sequence length
+    // second dimension of both variuables should be D/2
+    TORCH_CHECK(cos_cached.dim() == 2, "Two dimensions are [S, D/2]");
+    TORCH_CHECK(sin_cached.dim() == 2, "Two dimensions are [S, D/2]");
+    TORCH_CHECK(cos_cached.size(0) == S, "first dimension in cos cached is S");
+    TORCH_CHECK(cos_cached.size(1) == D/2, "second dimension in cos cached is D/2");
+    TORCH_CHECK(sin_cached.size(0) == S, "first dimension in sin cached is S");
+    TORCH_CHECK(sin_cached.size(1) == D/2, "second dimension in sin cached is D/2");
 
     // crete outpute tensor to launch kernel
     // use torch::empty_like()
@@ -34,11 +52,11 @@ torch::Tensor sin_cached) {
 
     // launch kernel, cuda kernels expect raw pointers to device
     // memory as arguments
-    void rope_forward(input.data_ptr<float>, cos_cached.data_ptr<float>,
-    sin_cached.data_ptr<float>, output.data_ptr<float>, int B, int H, int S, int D);
+    rope_forward(input.data_ptr<float>, ouput.data_ptr<float>, cos_cached.data_ptr<float>,
+                 sin_cached.data_ptr<float>, B, H, S, D);
 
     // check for kernel launch errors
-    cuda_err = cudaGetLastError();
+    cudaError_t cuda_err = cudaGetLastError();
     TORCH_CHECK(cuda_err == cudaSuccess, "kernel launch failed",
     cudaErrorString(cuda_err));
 
@@ -49,6 +67,8 @@ torch::Tensor sin_cached) {
 // backward pass implemementation
 // backward pass implements process of backpropagation
 // takes gradient of loss with respect to the output (grad_output)
+
+// Need to implement the inverse rotation (which is simpler than autograd approach)
 std::vector<torch::Tensor> rope_backward(torch::Tensor grad_output,
 torch::Tensor input, torch::Tensor cos_cached, torch::Tensor sin_cached) {
     // validate grad output

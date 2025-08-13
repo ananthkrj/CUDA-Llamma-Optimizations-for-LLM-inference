@@ -47,12 +47,59 @@ torch::Tensor sin_cached) {
 
 
 // backward pass implemementation
-std::vector<torch::Tensor> rope_backward() {
-    
+// backward pass implements process of backpropagation
+// takes gradient of loss with respect to the output (grad_output)
+std::vector<torch::Tensor> rope_backward(torch::Tensor grad_output,
+torch::Tensor input, torch::Tensor cos_cached, torch::Tensor sin_cached) {
+    // validate grad output
+    TORCH_CHECK(grad_output.is_cuda(), "Grad output is a tensor");
+    TORCH_CHECK(input.is_cuda(), "input is a tensor");
+    TORCH_CHECK(cos_cached.is_cuda(), "cos cached is a tensor");
+    TORCH_CHECK(sin_csched.is_cuda(), "sin cached is a tensor");
+
+    // enable gradient variables for input, cos_cached, and sin_cached
+    // probably use grad to intiilaize all parameters?
+    // copy, detatch, and requires_grad(true)
+    auto input_copy = input.copy().detatch().requires_grad(true);
+    auto cos_cached_copy = cos_cached.copy().detatch().requires_grad(true);
+    auto sin_cached_copy = sin_cached.copy().detatch().requires_grad(true);
+
+    // create output variable using forward pass and copy parameters
+    auto output = rope_forward(input_copy, cos_cached_copy, sin_cached_copy);
+
+    // backward pass to output and pass in grad_output
+    output.backward(grad_output);
+
+    // initialize grad_input, cos_cached, and sin_cached using grad
+    // copy original variables
+    auto grad_input = input.copy.grad();
+    auto grad_cos_cached = cos_cached.copy.grad();
+    auto grad_sin_cached = sin_cached.copy.grad();
+
+    // handle case where gradients might be zero
+    if (!grad_input.defined()) {
+        grad_input = torch::zeroes_like(input);
+    }
+
+    if (!grad_cos_cached.defined()) {
+        grad_cos_cached = torch::zeroes_like(cos_cached);
+    }
+
+    if (!grad_sin_cached.defined()) {
+        grad_sin_cached = torch::zeroes_like(sin_cached);
+    }
+
+    // no errors then return object
+    return {grad_input, grad_cos_cached, grad_sin_cached};
 }
 
 // register functions with pytorch, need it to expose 
 // cuda and cpp code to pytorch
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    m.def("forward", &rope_forward, "Rope forward pass in Cuda",
+    py::arg("input"), py::arg("cos_cached"), py::arg("sin_cached"));
 
+    m.def("backward", &rope_backward, "Rope backward pass in Cuda",
+    py::arg("grad_output"), py::arg("input"), py::arg("cos_cached"),
+    py::arg("sin_cached"));
 }

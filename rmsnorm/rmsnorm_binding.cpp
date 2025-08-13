@@ -108,7 +108,7 @@ torch::Tensor weight, float eps = 1e-6f) {
         grad_input = torch::zeros_like(input);
     }
 
-    if (!grad_weight.define()) {
+    if (!grad_weight.defined()) {
         grad_weight = torch::zeros_like(weight);
     }
 

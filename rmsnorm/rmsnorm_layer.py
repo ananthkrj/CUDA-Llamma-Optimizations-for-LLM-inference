@@ -24,7 +24,6 @@ _rmsnorm_cuda = load(
 # with my own cuda + cpp implementation
 class CustomRMSNorm(nn.module):
     def __init__(self, dim: int, eps: float = 1e-6):
-        # find out why i need super
         super().__init__()
         self.eps = eps
         self.weight = nn.Parameter(torch.ones(dim))

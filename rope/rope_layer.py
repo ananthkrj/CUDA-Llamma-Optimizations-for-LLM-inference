@@ -11,7 +11,7 @@ _rope_cuda = load(
     name="rope_cuda",
     sources=[
         os.path.join(os.path.dirname(__file__), "rope.cu"),
-        os.path.join(os.path.dirname(__File__), "rope_binding.cpp"),
+        os.path.join(os.path.dirname(__file__), "rope_binding.cpp"),
     ],
     verbose=True,
     extra_cuda_flags=["-O3", "-use_fast_math", "--expt-relaxed-constexpr"]
@@ -19,7 +19,7 @@ _rope_cuda = load(
 
 
 class CustomRope(nn.module):
-    def __init__(self, dim: int):
+    def __init__(self, dim: int, max_seq_len: int = 8192, base: float = 10000.0):
        # figure oiut what to do in init
        # why do i need super init, is there 
        # a derived class
@@ -30,8 +30,23 @@ class CustomRope(nn.module):
        parameters of loaded files for forward pass
        """
        super().__init__()
-       self.cos_cached = nn.Parameter(torch.ones(dim))
-       self.sin_cached = nn.Parameter(torch.ones(dim))
+       self.dim = dim
+       self.max_seq_len = max_seq_len
+       self.base = base
+
+       # Rope has no learnable parameters
+
+
+       # precompute cos/sin values
+
+    def _precompute_freqs(self, seq_len: int):
+        # create frequency values
+
+        # create position indices
+
+        # compute outer priduct: position * frequency
+
+        # precompute cos and sin
 
     # make sure that this is a type hint
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -44,12 +59,12 @@ class CustomRope(nn.module):
         # call function, input is z
         return _rope_cuda.forward(x, self.cos_cached, self.sin_cached)
         
+    @staticmethod
+    def from_standard_rope(standard_rope):
+        # extarct parameters from standard implementation
 
-    def from_standard_rope():
-        """
-        Places my rope implementation in place of the
-        standard rope implementation
-        """
-        # figure out what even is the standard rope
-        # implemenation in pytorch
-        # what am i actually replacing
+def replace_model_with_custom(model):
+    """
+    Replace all RoPE layers in model with custom Rope implementation
+    """
+
